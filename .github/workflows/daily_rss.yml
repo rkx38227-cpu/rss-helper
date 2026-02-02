@@ -1,37 +1,38 @@
-name: Fetch Daily News
+name: Global News Scraper
 
 on:
-  workflow_dispatch:  # <--- 这一行决定了是否有“Run workflow”按钮
   schedule:
-    - cron: '0 23 * * *'
+    - cron: '0 22 * * *' # 每天北京时间早上6点运行 (UTC 22:00)
+  workflow_dispatch:      # 允许手动触发
 
 jobs:
-  fetch_and_commit:
+  scrape:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
-          
-      - name: Install dependencies
-        run: pip install feedparser
+          python-version: '3.10'
 
-      - name: Run Crawler
-        run: python fetch_rss.py
+      - name: Install Dependencies
+        run: |
+          pip install -r app/requirements.txt
+
+      - name: Run Scraper
+        env:
+          # 如果 RSS.py 中有需要 API Key 的逻辑，需在此处注入
+          SILICONFLOW_API_KEY: ${{ secrets.SILICONFLOW_API_KEY }}
+        run: |
+          # 运行一个专门的脚本来调用 RSS.py 并保存为 JSON
+          python .github/scripts/generate_cache.py
 
       - name: Commit and Push
         run: |
-          git config --global user.name "GitHub Action"
-          git config --global user.email "action@github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add news_cache.json
-          # 如果没有变化也不报错
-          git commit -m "Auto update news" || exit 0
+          git commit -m "Update news cache: $(date)"
           git push
-
