@@ -1,0 +1,35 @@
+name: Fetch Daily News
+
+on:
+  workflow_dispatch: # 关键：允许通过 API 手动触发
+  schedule:
+    - cron: '0 23 * * *' # 每天自动跑一次保底
+
+jobs:
+  fetch_and_commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 赋予写权限以便提交结果
+      
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: pip install feedparser
+
+      - name: Run Crawler
+        run: python fetch_rss.py
+
+      - name: Commit and Push
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add news_cache.json
+          git commit -m "Auto update news [skip ci]" || exit 0
+          git push
