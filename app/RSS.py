@@ -131,7 +131,7 @@ def fetch_rss_content(rss_url, hours_limit=12, max_items_safety=50, max_length=5
 
         # 4. 并发抓取正文
         results_map = {}
-        with ThreadPoolExecutor(max_workers=8) as executor:
+        with ThreadPoolExecutor(max_workers=1) as executor:
             future_to_idx = {
                 executor.submit(fetch_url_smart, entry.link): i 
                 for i, entry in enumerate(target_entries)
@@ -166,3 +166,4 @@ def fetch_rss_content(rss_url, hours_limit=12, max_items_safety=50, max_length=5
 
     except Exception as e:
         return f"系统错误: {e}"
+
