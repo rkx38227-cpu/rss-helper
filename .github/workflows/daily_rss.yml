@@ -1,15 +1,15 @@
 name: Fetch Daily News
 
 on:
-  workflow_dispatch: # 关键：允许通过 API 手动触发
+  workflow_dispatch:  # <--- 这一行决定了是否有“Run workflow”按钮
   schedule:
-    - cron: '0 23 * * *' # 每天自动跑一次保底
+    - cron: '0 23 * * *'
 
 jobs:
   fetch_and_commit:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 赋予写权限以便提交结果
+      contents: write
       
     steps:
       - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.9'
-
+          
       - name: Install dependencies
         run: pip install feedparser
 
@@ -31,5 +31,6 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           git add news_cache.json
-          git commit -m "Auto update news [skip ci]" || exit 0
+          # 如果没有变化也不报错
+          git commit -m "Auto update news" || exit 0
           git push
