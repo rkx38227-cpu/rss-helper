@@ -34,3 +34,4 @@ jobs:
           # 如果没有变化也不报错
           git commit -m "Auto update news" || exit 0
           git push
+
